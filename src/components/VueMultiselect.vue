@@ -1,0 +1,317 @@
+<script setup lang="ts" generic="T extends Record<string, any>">
+import { computed, onMounted, ref, watch } from 'vue'
+import { onClickOutside } from '@vueuse/core'
+import CheckedIcon from './icons/CheckedIcon.vue'
+import ClearIcon from './icons/ClearIcon.vue'
+import ExpandIcon from './icons/ExpandIcon.vue'
+import UncheckedIcon from './icons/UncheckedIcon.vue'
+
+const emits = defineEmits<{
+  remove: [value: T | T[]]
+  select: [value: T | T[]]
+  'update:model-value': [value?: T | T[]]
+}>()
+const props = withDefaults(
+  defineProps<{
+    allowEmpty?: boolean
+    clearOnSelect?: boolean
+    closeOnSelect?: boolean
+    hideSelected?: boolean
+    max?: number
+    modelValue?: T | T[]
+    multiple?: boolean
+    options: T[]
+    labelField?: keyof T
+    placeholder?: string
+    searchable?: boolean
+    customSearch?: (search: string, option: T) => boolean
+    valueField?: keyof T
+  }>(),
+  {
+    closeOnSelect: undefined,
+    labelField: 'label',
+    placeholder: 'Sélectionner une option',
+    valueField: 'value',
+  }
+)
+
+const filteredOptions = computed(() => {
+  let options = props.options.concat()
+  const s = search.value.toLowerCase().trim()
+  if (props.searchable && s) {
+    options = options.filter((o) =>
+      props.customSearch ? props.customSearch(s, o) : o[props.valueField].toLowerCase().includes(s)
+    )
+  }
+  if (props.hideSelected) {
+    options = options.filter((o) => !isSelected(o))
+  }
+  return options
+})
+const internalValue = computed(() => {
+  if (!props.modelValue) return []
+  if (!Array.isArray(props.modelValue)) return [props.modelValue]
+  return props.modelValue
+})
+const valueKeys = computed(() => internalValue.value.map((option) => option[props.valueField]))
+
+const menuEl = ref(null)
+const buttonEl = ref(null)
+const search = ref('')
+const showMenu = ref(false)
+
+function getLabel(option: T) {
+  return option[props.labelField]
+}
+
+function isSelected(option: T) {
+  const value = option[props.valueField]
+  return valueKeys.value.indexOf(value) > -1
+}
+
+function select(option: T) {
+  if (props.max && props.multiple && internalValue.value.length === props.max) return
+
+  const selected = isSelected(option)
+
+  if (selected) return remove(option)
+
+  if (props.multiple) emits('update:model-value', internalValue.value.concat([option]))
+  else emits('update:model-value', option)
+
+  emits('select', option)
+
+  if (props.clearOnSelect) search.value = ''
+
+  if (props.closeOnSelect || (props.closeOnSelect === undefined && !props.multiple)) {
+    showMenu.value = false
+  }
+}
+
+function remove(option: T, close?: boolean) {
+  if (!props.allowEmpty && internalValue.value.length <= 1) return
+
+  const index = valueKeys.value.indexOf(option[props.valueField])
+  const newValue = internalValue.value.slice(0, index).concat(internalValue.value.slice(index + 1))
+
+  if (props.multiple) emits('update:model-value', newValue)
+  else emits('update:model-value', undefined)
+
+  emits('remove', option)
+
+  if (props.closeOnSelect || close || (props.closeOnSelect === undefined && !props.multiple)) {
+    showMenu.value = false
+  }
+}
+
+function reset(option?: T) {
+  showMenu.value = false
+  if (props.multiple) {
+    if (props.allowEmpty) emits('update:model-value', option ? [option] : [])
+    else emits('update:model-value', option ? [option] : [props.options[0]])
+  } else {
+    if (props.allowEmpty) emits('update:model-value', option)
+    else emits('update:model-value', option ?? props.options[0])
+  }
+}
+
+watch(
+  () => props.allowEmpty,
+  (n, o) => {
+    if (o && !n && !internalValue.value.length) select(props.options[0])
+  }
+)
+
+watch(
+  () => props.multiple,
+  () => {
+    if (internalValue.value.length) reset(internalValue.value[0])
+  }
+)
+
+onClickOutside(
+  menuEl,
+  () => {
+    showMenu.value = false
+  },
+  {
+    ignore: [buttonEl],
+  }
+)
+
+onMounted(() => {
+  if (!props.allowEmpty && !internalValue.value.length && filteredOptions.value.length) {
+    select(filteredOptions.value[0])
+  }
+})
+</script>
+
+<template>
+  <div class="vue-multiselect">
+    <button
+      ref="buttonEl"
+      class="vue-multiselect__toggle"
+      :data-menu-shown="showMenu || undefined"
+      @click="showMenu = !showMenu"
+    >
+      <span v-if="!internalValue.length" class="vue-multiselect__placeholder">
+        {{ placeholder }}
+      </span>
+      <span v-else-if="!multiple">{{ getLabel(internalValue[0]) }}</span>
+      <template v-else>
+        <span v-for="o in internalValue" class="vue-multiselect__chip">
+          {{ getLabel(o) }}
+          <button class="vue-multiselect__remove-btn" @click.stop="remove(o)">
+            <ClearIcon />
+          </button>
+        </span>
+      </template>
+      <button
+        v-if="multiple && internalValue.length"
+        class="vue-multiselect__clear-btn"
+        @click.stop="reset()"
+      >
+        <ClearIcon />
+      </button>
+      <ExpandIcon />
+    </button>
+    <ul v-if="showMenu" ref="menuEl" class="vue-multiselect__menu">
+      <li v-if="searchable">
+        <input v-model="search" type="text" placeholder="Search">
+      </li>
+      <li v-for="o in filteredOptions" :data-selected="isSelected(o) || undefined">
+        <button @click="select(o)">
+          <slot name="option" :option="o" :selected="isSelected(o)">
+            {{ o.label }}
+            <template v-if="multiple">
+              <CheckedIcon v-if="isSelected(o)" />
+              <UncheckedIcon v-else />
+            </template>
+          </slot>
+        </button>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.vue-multiselect {
+  position: relative;
+
+  svg {
+    pointer-events: none;
+  }
+
+  .vue-multiselect__toggle {
+    align-items: center;
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(220, 17%, 93%);
+    border-radius: 8px;
+    color: hsl(220, 43%, 11%);
+    display: inline-flex;
+    font-weight: bold;
+    gap: 4px;
+    padding: 8px;
+    transition: 0.15s background-color;
+
+    &:not(:disabled):hover {
+      cursor: pointer;
+    }
+
+    &:hover,
+    &[data-menu-shown] {
+      background-color: hsl(192, 33%, 97%);
+    }
+
+    .vue-multiselect__placeholder {
+      color: gray;
+    }
+
+    .vue-multiselect__chip {
+      align-items: center;
+      background-color: hsl(195, 54%, 27%);
+      border-radius: 99px;
+      color: hsl(0, 0%, 95%);
+      display: inline-flex;
+      font-size: 12px;
+      gap: 4px;
+      padding: 0 0 0 8px;
+
+      .vue-multiselect__remove-btn {
+        background-color: transparent;
+        border: none;
+        border-radius: 99px;
+        color: currentColor;
+        display: inline-grid;
+        padding: 4px;
+
+        &:hover {
+          background-color: hsl(195, 54%, 17%);
+          cursor: pointer;
+        }
+      }
+    }
+
+    .vue-multiselect__clear-btn {
+      background-color: transparent;
+      border: none;
+      border-radius: 99px;
+      color: hsl(0, 0%, 30%);
+      display: inline-grid;
+      margin-left: 4px;
+      padding: 2px;
+      transition-duration: 0.15s;
+      transition-property: background-color color;
+
+      &:hover {
+        background-color: hsl(0, 90%, 62%);
+        color: hsl(0, 0%, 100%);
+        cursor: pointer;
+      }
+    }
+  }
+
+  .vue-multiselect__menu {
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(220, 17%, 93%);
+    border-radius: 8px;
+    left: 0;
+    list-style: none;
+    padding: 8px 0;
+    position: absolute;
+    top: calc(100% + 4px);
+    white-space: nowrap;
+    z-index: 2023;
+
+    > li {
+      > input[type="text"] {
+        border: 1px solid hsl(0, 0%, 85%);
+        border-radius: 4px;
+        margin: 0px 8px 8px;
+        padding: 8px;
+      }
+      > button {
+        align-items: center;
+        background-color: transparent;
+        border: none;
+        display: inline-flex;
+        height: 100%;
+        justify-content: space-between;
+        padding: 8px 16px;
+        text-align: start;
+        transition: 0.15s background-color;
+        width: 100%;
+
+        &:hover {
+          background-color: hsl(0, 0%, 95%);
+          cursor: pointer;
+        }
+
+        > svg {
+          margin-left: 16px;
+        }
+      }
+    }
+  }
+}
+</style>
