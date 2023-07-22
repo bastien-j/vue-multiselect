@@ -177,18 +177,26 @@ onMounted(() => {
     </button>
     <ul v-if="showMenu" ref="menuEl" class="vue-multiselect__menu">
       <li v-if="searchable">
-        <input v-model="search" type="text" placeholder="Search">
+        <slot name="search" :value="search" :search="(value: string) => search = value">
+          <input v-model="search" type="text" placeholder="Search" name="vue-multiselect__search" />
+        </slot>
       </li>
-      <li v-for="o in filteredOptions" :data-selected="isSelected(o) || undefined">
-        <button @click="select(o)">
-          <slot name="option" :option="o" :selected="isSelected(o)">
+      <li
+        v-for="o in filteredOptions"
+        :data-selected="isSelected(o) || undefined"
+        tabindex="0"
+        @click="select(o)"
+        @keypress.enter.space="select(o)"
+      >
+        <slot name="option" :option="o" :selected="isSelected(o)">
+          <div class="vue-multiselect__option">
             {{ o.label }}
             <template v-if="multiple">
               <CheckedIcon v-if="isSelected(o)" />
               <UncheckedIcon v-else />
             </template>
-          </slot>
-        </button>
+          </div>
+        </slot>
       </li>
     </ul>
   </div>
@@ -284,16 +292,14 @@ onMounted(() => {
     z-index: 2023;
 
     > li {
-      > input[type="text"] {
+      > input[type='text'] {
         border: 1px solid hsl(0, 0%, 85%);
         border-radius: 4px;
         margin: 0px 8px 8px;
         padding: 8px;
       }
-      > button {
+      > .vue-multiselect__option {
         align-items: center;
-        background-color: transparent;
-        border: none;
         display: inline-flex;
         height: 100%;
         justify-content: space-between;
@@ -310,6 +316,10 @@ onMounted(() => {
         > svg {
           margin-left: 16px;
         }
+      }
+
+      &[data-selected] > .vue-multiselect__option {
+        font-weight: bold;
       }
     }
   }
