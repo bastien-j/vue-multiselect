@@ -182,17 +182,17 @@ onMounted(() => {
         </slot>
       </li>
       <li
-        v-for="o in filteredOptions"
-        :data-selected="isSelected(o) || undefined"
+        v-for="{ o, selected } in filteredOptions.map(o => ({ o, selected: isSelected(o) }))"
+        :data-selected="selected || undefined"
         tabindex="0"
         @click="select(o)"
         @keypress.enter.space="select(o)"
       >
-        <slot name="option" :option="o" :selected="isSelected(o)">
+        <slot name="option" :option="o" :selected="selected">
           <div class="vue-multiselect__option">
             {{ o.label }}
             <template v-if="multiple">
-              <CheckedIcon v-if="isSelected(o)" />
+              <CheckedIcon v-if="selected" />
               <UncheckedIcon v-else />
             </template>
           </div>
