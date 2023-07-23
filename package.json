@@ -1,19 +1,51 @@
 {
-  "name": "vue-multiselect",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@bastien-j/vue-multiselect",
+  "version": "0.0.1",
+  "description": "Simple and customizable multiselect for Vue 3",
+  "keywords": [
+    "vue",
+    "vue 3",
+    "select",
+    "multiselect"
+  ],
+  "bugs": {
+    "url": "https://github.com/bastien-j/vue-multiselect/issues"
+  },
+  "repository": {
+    "url": "https://github.com/bastien-j/vue-multiselect"
+  },
+  "license": "MIT",
   "type": "module",
+  "files": [
+    "dist/"
+  ],
+  "main": "./dist/vue-multiselect.umd.cjs",
+  "module": "./dist/vue-multiselect.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue-multiselect.js",
+      "require": "./dist/vue-multiselect.umd.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "build": "run-p type-check build-only generate:types",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "generate:types": "vue-tsc --declaration --emitDeclarationOnly --outdir ./dist --project tsconfig.multiselect.json",
+    "type-check": "vue-tsc --noEmit --project tsconfig.multiselect.json"
   },
   "dependencies": {
     "vue": "^3.2.47"
   },
   "devDependencies": {
+    "@types/node": "^20.4.4",
     "@vitejs/plugin-vue": "^4.1.0",
     "@vueuse/core": "^10.2.1",
+    "npm-run-all": "^4.1.5",
     "sass": "^1.64.0",
     "typescript": "^4.9.3",
     "vite": "^4.2.0",

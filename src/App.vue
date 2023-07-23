@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import VueMultiselect from './components/VueMultiselect.vue'
+import VueMultiselect from './multiselect/components/VueMultiselect.vue'
 
 const options = [
   {

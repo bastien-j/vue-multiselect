@@ -7,10 +7,10 @@ import ExpandIcon from './icons/ExpandIcon.vue'
 import UncheckedIcon from './icons/UncheckedIcon.vue'
 
 const emits = defineEmits<{
-  remove: [value: T | T[]]
-  select: [value: T | T[]]
-  search: [value: string]
-  'update:model-value': [value?: T | T[]]
+  (e: 'remove', value: T | T[]): void
+  (e: 'select', value: T | T[]): void
+  (e: 'search', value: string): void
+  (e: 'update:model-value', value?: T | T[]): void
 }>()
 const props = withDefaults(
   defineProps<{
@@ -31,7 +31,9 @@ const props = withDefaults(
   {
     closeOnSelect: undefined,
     labelField: 'label',
+    multiple: false,
     placeholder: 'Sélectionner une option',
+    searchable: false,
     valueField: 'value',
   }
 )
