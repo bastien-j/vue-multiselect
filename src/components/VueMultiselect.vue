@@ -9,6 +9,7 @@ import UncheckedIcon from './icons/UncheckedIcon.vue'
 const emits = defineEmits<{
   remove: [value: T | T[]]
   select: [value: T | T[]]
+  search: [value: string]
   'update:model-value': [value?: T | T[]]
 }>()
 const props = withDefaults(
@@ -35,8 +36,11 @@ const props = withDefaults(
   }
 )
 defineSlots<{
-  option(props: { option: T, selected: boolean }): any
-  search(props: { search: (value: string) => void, value: string }): any
+  chip(props: { option: T; remove: () => void }): any
+  multiple(props: { options: T[]; remove: (option: T) => void }): any
+  option(props: { option: T; selected: boolean }): any
+  search(props: { search: (value: string) => void; value: string }): any
+  single(props: { option: T }): any
 }>()
 
 const filteredOptions = computed(() => {
@@ -125,13 +129,13 @@ watch(
     if (o && !n && !internalValue.value.length) select(props.options[0])
   }
 )
-
 watch(
   () => props.multiple,
   () => {
     if (internalValue.value.length) reset(internalValue.value[0])
   }
 )
+watch(search, (v) => emits('search', v))
 
 onClickOutside(
   menuEl,
@@ -161,14 +165,24 @@ onMounted(() => {
       <span v-if="!internalValue.length" class="vue-multiselect__placeholder">
         {{ placeholder }}
       </span>
-      <span v-else-if="!multiple">{{ getLabel(internalValue[0]) }}</span>
+      <span v-else-if="!multiple">
+        <slot name="single" :option="internalValue[0]">{{ getLabel(internalValue[0]) }}</slot>
+      </span>
       <template v-else>
-        <span v-for="o in internalValue" class="vue-multiselect__chip">
-          {{ getLabel(o) }}
-          <button class="vue-multiselect__remove-btn" @click.stop="remove(o)">
-            <ClearIcon />
-          </button>
-        </span>
+        <slot name="multiple" :options="internalValue" :remove="remove">
+          <div class="vue-multiselect__chips">
+            <template v-for="o in internalValue">
+              <slot name="chip" :option="o" :remove="() => remove(o)">
+                <span class="vue-multiselect__chip">
+                  {{ getLabel(o) }}
+                  <button class="vue-multiselect__remove-btn" @click.stop="remove(o)">
+                    <ClearIcon />
+                  </button>
+                </span>
+              </slot>
+            </template>
+          </div>
+        </slot>
       </template>
       <button
         v-if="multiple && internalValue.length"
@@ -186,7 +200,7 @@ onMounted(() => {
         </slot>
       </li>
       <li
-        v-for="{ o, selected } in filteredOptions.map(o => ({ o, selected: isSelected(o) }))"
+        v-for="{ o, selected } in filteredOptions.map((o) => ({ o, selected: isSelected(o) }))"
         :data-selected="selected || undefined"
         tabindex="0"
         @click="select(o)"
@@ -221,7 +235,6 @@ onMounted(() => {
     border-radius: 8px;
     color: hsl(220, 43%, 11%);
     display: inline-flex;
-    font-weight: bold;
     gap: 4px;
     padding: 8px;
     transition: 0.15s background-color;
@@ -239,27 +252,33 @@ onMounted(() => {
       color: gray;
     }
 
-    .vue-multiselect__chip {
+    .vue-multiselect__chips {
       align-items: center;
-      background-color: hsl(195, 54%, 27%);
-      border-radius: 99px;
-      color: hsl(0, 0%, 95%);
-      display: inline-flex;
-      font-size: 12px;
+      display: flex;
       gap: 4px;
-      padding: 0 0 0 8px;
 
-      .vue-multiselect__remove-btn {
-        background-color: transparent;
-        border: none;
+      .vue-multiselect__chip {
+        align-items: center;
+        background-color: hsl(195, 54%, 27%);
         border-radius: 99px;
-        color: currentColor;
-        display: inline-grid;
-        padding: 4px;
+        color: hsl(0, 0%, 95%);
+        display: inline-flex;
+        font-size: 12px;
+        gap: 4px;
+        padding: 0 0 0 8px;
 
-        &:hover {
-          background-color: hsl(195, 54%, 17%);
-          cursor: pointer;
+        .vue-multiselect__remove-btn {
+          background-color: transparent;
+          border: none;
+          border-radius: 99px;
+          color: currentColor;
+          display: inline-grid;
+          padding: 4px;
+
+          &:hover {
+            background-color: hsl(195, 54%, 17%);
+            cursor: pointer;
+          }
         }
       }
     }
@@ -273,7 +292,7 @@ onMounted(() => {
       margin-left: 4px;
       padding: 2px;
       transition-duration: 0.15s;
-      transition-property: background-color color;
+      transition-property: background-color, color;
 
       &:hover {
         background-color: hsl(0, 90%, 62%);

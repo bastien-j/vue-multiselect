@@ -23,6 +23,7 @@ const options = [
 
 const value1 = ref()
 const value2 = ref()
+const value3 = ref()
 
 const allowEmpty = ref(true)
 const clearOnSelect = ref(true)
@@ -75,7 +76,7 @@ const searchable = ref(true)
         />
       </div>
       <div class="select">
-        <p>With custom option slot</p>
+        <p>Custom slots</p>
         <VueMultiselect
           v-model="value2"
           :options="options"
@@ -86,6 +87,9 @@ const searchable = ref(true)
           :multiple="multiple"
           :searchable="searchable"
         >
+          <template #multiple="{ options, remove }">
+            <span v-for="o in options">{{ o.label }}<button @click.stop="remove(o)">x</button></span>
+          </template>
           <template #search="{ value, search }">
             <input placeholder="my custom input" type="text" :value="value" @input="search(($event.target as HTMLInputElement).value)">
           </template>
@@ -93,6 +97,24 @@ const searchable = ref(true)
             <div class="option" :class="{ selected }">
               {{ option.label }}
             </div>
+          </template>
+        </VueMultiselect>
+      </div>
+      <div class="select">
+        <p>Custom chips</p>
+        <VueMultiselect
+          v-model="value3"
+          :options="options"
+          :allow-empty="allowEmpty"
+          :clear-on-select="clearOnSelect"
+          :close-on-select="closeOnSelect"
+          :hide-selected="hideSelected"
+          :multiple="multiple"
+          :searchable="searchable"
+          @search="console.log($event)"
+        >
+          <template #chip="{ option, remove }">
+            <span class="custom-chip">{{ option.label }}<button @click.stop="remove()">x</button></span>
           </template>
         </VueMultiselect>
       </div>
@@ -125,6 +147,12 @@ const searchable = ref(true)
   .select {
     p {
       margin-bottom: 1rem;
+    }
+
+    .custom-chip {
+      background-color: rgb(252, 171, 171);
+      padding: 4px;
+      border-radius: 4px;
     }
   }
 
