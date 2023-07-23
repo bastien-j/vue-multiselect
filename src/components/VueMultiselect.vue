@@ -34,6 +34,10 @@ const props = withDefaults(
     valueField: 'value',
   }
 )
+defineSlots<{
+  option(props: { option: T, selected: boolean }): any
+  search(props: { search: (value: string) => void, value: string }): any
+}>()
 
 const filteredOptions = computed(() => {
   let options = props.options.concat()
