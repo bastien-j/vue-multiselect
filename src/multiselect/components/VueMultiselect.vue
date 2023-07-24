@@ -161,8 +161,9 @@ onMounted(() => {
     <button
       ref="buttonEl"
       class="vue-multiselect__toggle"
+      type="button"
       :data-menu-shown="showMenu || undefined"
-      @click="showMenu = !showMenu"
+      @click.stop="showMenu = !showMenu"
     >
       <span v-if="!internalValue.length" class="vue-multiselect__placeholder">
         {{ placeholder }}
@@ -177,7 +178,7 @@ onMounted(() => {
               <slot name="chip" :option="o" :remove="() => remove(o)">
                 <span class="vue-multiselect__chip">
                   {{ getLabel(o) }}
-                  <button class="vue-multiselect__remove-btn" @click.stop="remove(o)">
+                  <button class="vue-multiselect__remove-btn" type="button" @click.stop="remove(o)">
                     <ClearIcon />
                   </button>
                 </span>
@@ -189,6 +190,7 @@ onMounted(() => {
       <button
         v-if="multiple && internalValue.length"
         class="vue-multiselect__clear-btn"
+        type="button"
         @click.stop="reset()"
       >
         <ClearIcon />
