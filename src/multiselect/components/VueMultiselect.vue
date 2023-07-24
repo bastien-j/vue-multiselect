@@ -38,11 +38,11 @@ const props = withDefaults(
   }
 )
 defineSlots<{
-  chip(props: { option: T; remove: () => void }): any
-  multiple(props: { options: T[]; remove: (option: T) => void }): any
-  option(props: { option: T; selected: boolean }): any
-  search(props: { search: (value: string) => void; value: string }): any
-  single(props: { option: T }): any
+  chip?(props: { option: T; remove: () => void }): any
+  multiple?(props: { options: T[]; remove: (option: T) => void }): any
+  option?(props: { option: T; selected: boolean }): any
+  search?(props: { search: (value: string) => void; value: string }): any
+  single?(props: { option: T }): any
 }>()
 
 const filteredOptions = computed(() => {

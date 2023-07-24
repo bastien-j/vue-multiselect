@@ -9,8 +9,6 @@ interface TypesConfig {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    VueMultiselect: TypesConfig extends Record<'VueMultiselect', infer T>
-      ? T
-      : typeof VueMultiselect
+    VueMultiselect: typeof VueMultiselect
   }
 }
