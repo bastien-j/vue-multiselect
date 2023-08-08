@@ -7,6 +7,7 @@ import ExpandIcon from './icons/ExpandIcon.vue'
 import UncheckedIcon from './icons/UncheckedIcon.vue'
 
 const emits = defineEmits<{
+  (e: 'close'): void
   (e: 'remove', value: T | T[]): void
   (e: 'select', value: T | T[]): void
   (e: 'search', value: string): void
@@ -138,6 +139,7 @@ watch(
   }
 )
 watch(search, (v) => emits('search', v))
+watch(showMenu, (v) => v ? null : emits('close'))
 
 onClickOutside(
   menuEl,

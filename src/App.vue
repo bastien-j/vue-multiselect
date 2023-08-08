@@ -73,6 +73,7 @@ const searchable = ref(true)
           :hide-selected="hideSelected"
           :multiple="multiple"
           :searchable="searchable"
+          @close="console.log('1 - closed')"
         />
       </div>
       <div class="select">
@@ -86,6 +87,7 @@ const searchable = ref(true)
           :hide-selected="hideSelected"
           :multiple="multiple"
           :searchable="searchable"
+          @close="console.log('2 - closed')"
         >
           <template #multiple="{ options, remove }">
             <span v-for="o in options">{{ o.label }}<button @click.stop="remove(o)">x</button></span>
@@ -112,6 +114,7 @@ const searchable = ref(true)
           :multiple="multiple"
           :searchable="searchable"
           @search="console.log($event)"
+          @close="console.log('3 - closed')"
         >
           <template #chip="{ option, remove }">
             <span class="custom-chip">{{ option.label }}<button @click.stop="remove()">x</button></span>
