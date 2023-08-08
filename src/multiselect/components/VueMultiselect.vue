@@ -123,7 +123,7 @@ function removeFromChip(option: T) {
 }
 
 function reset(option?: T) {
-  showMenu.value = false
+  if (!props.openOnClear) showMenu.value = false
   if (props.multiple) {
     if (props.allowEmpty) emits('update:model-value', option ? [option] : [])
     else emits('update:model-value', option ? [option] : [props.options[0]])
