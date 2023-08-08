@@ -15,6 +15,7 @@ const emits = defineEmits<{
 }>()
 const props = withDefaults(
   defineProps<{
+    align?: 'left' | 'right'
     allowEmpty?: boolean
     clearOnSelect?: boolean
     closeOnSelect?: boolean
@@ -31,6 +32,7 @@ const props = withDefaults(
     valueField?: keyof T
   }>(),
   {
+    align: 'left',
     closeOnSelect: undefined,
     labelField: 'label',
     multiple: false,
@@ -206,7 +208,7 @@ onMounted(() => {
       </button>
       <ExpandIcon />
     </button>
-    <ul v-if="showMenu" ref="menuEl" class="vue-multiselect__menu">
+    <ul v-if="showMenu" ref="menuEl" class="vue-multiselect__menu" :style="{ [align]: '0' }">
       <li v-if="searchable">
         <slot name="search" :value="search" :search="(value: string) => search = value">
           <input v-model="search" type="text" placeholder="Search" name="vue-multiselect__search" />
@@ -319,7 +321,6 @@ onMounted(() => {
     background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(220, 17%, 93%);
     border-radius: 8px;
-    left: 0;
     list-style: none;
     padding: 8px 0;
     position: absolute;

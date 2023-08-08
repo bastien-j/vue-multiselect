@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import VueMultiselect from './multiselect/components/VueMultiselect.vue'
 
 const options = [
@@ -25,6 +25,7 @@ const value1 = ref()
 const value2 = ref()
 const value3 = ref()
 
+const alignRight = ref(false)
 const allowEmpty = ref(true)
 const clearOnSelect = ref(true)
 const closeOnSelect = ref(false)
@@ -32,11 +33,17 @@ const hideSelected = ref(false)
 const multiple = ref(true)
 const searchable = ref(true)
 const openOnClear = ref(false)
+
+const align = computed(() => alignRight.value ? 'right' : 'left')
 </script>
 
 <template>
   <div class="container">
     <div class="settings">
+      <div class="checkbox">
+        <label for="alignRight">alignRight</label>
+        <input v-model="alignRight" type="checkbox" name="alignRight" id="alignRight" />
+      </div>
       <div class="checkbox">
         <label for="allowEmpty">allowEmpty</label>
         <input v-model="allowEmpty" type="checkbox" name="allowEmpty" id="allowEmpty" />
@@ -72,6 +79,7 @@ const openOnClear = ref(false)
         <VueMultiselect
           v-model="value1"
           :options="options"
+          :align="align"
           :allow-empty="allowEmpty"
           :clear-on-select="clearOnSelect"
           :close-on-select="closeOnSelect"
@@ -87,6 +95,7 @@ const openOnClear = ref(false)
         <VueMultiselect
           v-model="value2"
           :options="options"
+          :align="align"
           :allow-empty="allowEmpty"
           :clear-on-select="clearOnSelect"
           :close-on-select="closeOnSelect"
@@ -114,6 +123,7 @@ const openOnClear = ref(false)
         <VueMultiselect
           v-model="value3"
           :options="options"
+          :align="align"
           :allow-empty="allowEmpty"
           :clear-on-select="clearOnSelect"
           :close-on-select="closeOnSelect"
