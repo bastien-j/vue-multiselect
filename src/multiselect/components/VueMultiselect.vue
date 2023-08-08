@@ -22,6 +22,7 @@ const props = withDefaults(
     max?: number
     modelValue?: T | T[]
     multiple?: boolean
+    openOnClear?: boolean
     options: T[]
     labelField?: keyof T
     placeholder?: string
@@ -115,6 +116,12 @@ function remove(option: T, close?: boolean) {
   }
 }
 
+function removeFromChip(option: T) {
+  remove(option)
+
+  if (props.openOnClear) showMenu.value = true
+}
+
 function reset(option?: T) {
   showMenu.value = false
   if (props.multiple) {
@@ -174,13 +181,13 @@ onMounted(() => {
         <slot name="single" :option="internalValue[0]">{{ getLabel(internalValue[0]) }}</slot>
       </span>
       <template v-else>
-        <slot name="multiple" :options="internalValue" :remove="remove">
+        <slot name="multiple" :options="internalValue" :remove="removeFromChip">
           <div class="vue-multiselect__chips">
             <template v-for="o in internalValue">
-              <slot name="chip" :option="o" :remove="() => remove(o)">
+              <slot name="chip" :option="o" :remove="() => removeFromChip(o)">
                 <span class="vue-multiselect__chip">
                   {{ getLabel(o) }}
-                  <button class="vue-multiselect__remove-btn" type="button" @click.stop="remove(o)">
+                  <button class="vue-multiselect__remove-btn" type="button" @click.stop="removeFromChip(o)">
                     <ClearIcon />
                   </button>
                 </span>

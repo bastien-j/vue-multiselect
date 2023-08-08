@@ -31,6 +31,7 @@ const closeOnSelect = ref(false)
 const hideSelected = ref(false)
 const multiple = ref(true)
 const searchable = ref(true)
+const openOnClear = ref(false)
 </script>
 
 <template>
@@ -60,6 +61,10 @@ const searchable = ref(true)
         <label for="searchable">searchable</label>
         <input v-model="searchable" type="checkbox" name="searchable" id="searchable" />
       </div>
+      <div class="checkbox">
+        <label for="openOnClear">openOnClear</label>
+        <input v-model="openOnClear" type="checkbox" name="openOnClear" id="openOnClear" />
+      </div>
     </div>
     <div class="selects">
       <div class="select">
@@ -73,6 +78,7 @@ const searchable = ref(true)
           :hide-selected="hideSelected"
           :multiple="multiple"
           :searchable="searchable"
+          :open-on-clear="openOnClear"
           @close="console.log('1 - closed')"
         />
       </div>
@@ -87,6 +93,7 @@ const searchable = ref(true)
           :hide-selected="hideSelected"
           :multiple="multiple"
           :searchable="searchable"
+          :open-on-clear="openOnClear"
           @close="console.log('2 - closed')"
         >
           <template #multiple="{ options, remove }">
@@ -113,6 +120,7 @@ const searchable = ref(true)
           :hide-selected="hideSelected"
           :multiple="multiple"
           :searchable="searchable"
+          :open-on-clear="openOnClear"
           @search="console.log($event)"
           @close="console.log('3 - closed')"
         >
