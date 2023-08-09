@@ -270,6 +270,7 @@ onMounted(() => {
     .vue-multiselect__chips {
       align-items: center;
       display: flex;
+      flex-wrap: wrap;
       gap: 4px;
 
       .vue-multiselect__chip {
@@ -314,6 +315,11 @@ onMounted(() => {
         color: hsl(0, 0%, 100%);
         cursor: pointer;
       }
+    }
+
+    > svg {
+      min-height: 24px;
+      min-width: 24px;
     }
   }
 
