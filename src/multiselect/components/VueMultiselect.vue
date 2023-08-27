@@ -22,6 +22,7 @@ const props = withDefaults(
     closeOnSelect?: boolean
     hideSelected?: boolean
     max?: number
+    maxHeight?: string
     modelValue?: T | T[]
     multiple?: boolean
     openOnClear?: boolean
@@ -38,6 +39,7 @@ const props = withDefaults(
     align: 'left',
     closeOnSelect: undefined,
     labelField: 'label',
+    maxHeight: '250px',
     multiple: false,
     placeholder: 'Sélectionner une option',
     position: 'bottom',
@@ -244,7 +246,7 @@ onMounted(() => {
       v-if="showMenu"
       ref="menuEl"
       class="vue-multiselect__menu"
-      :style="{ ...menuPosition, [align]: '0' }"
+      :style="{ ...menuPosition, [align]: '0', maxHeight }"
     >
       <li v-if="searchable" class="vue-multiselect__search">
         <slot name="search" :value="search" :search="(value: string) => search = value">
@@ -365,18 +367,26 @@ onMounted(() => {
     border: 1px solid hsl(220, 17%, 93%);
     border-radius: 8px;
     list-style: none;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 8px 0;
     position: absolute;
     white-space: nowrap;
     z-index: 2023;
 
-    > li {
-      > input[type='text'] {
+    .vue-multiselect__search {
+      position: sticky;
+      top: 0px;
+
+      input[type='text'] {
         border: 1px solid hsl(0, 0%, 85%);
         border-radius: 4px;
         margin: 0px 8px 8px;
         padding: 8px;
       }
+    }
+
+    > li {
       > .vue-multiselect__option {
         align-items: center;
         display: inline-flex;
