@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { computed, onMounted, ref, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { onClickOutside, useWindowSize } from '@vueuse/core'
 import CheckedIcon from './icons/CheckedIcon.vue'
 import ClearIcon from './icons/ClearIcon.vue'
 import ExpandIcon from './icons/ExpandIcon.vue'
@@ -15,6 +15,7 @@ const emits = defineEmits<{
 }>()
 const props = withDefaults(
   defineProps<{
+    adjustPosition?: boolean
     align?: 'left' | 'right'
     allowEmpty?: boolean
     clearOnSelect?: boolean
@@ -27,16 +28,19 @@ const props = withDefaults(
     options: T[]
     labelField?: keyof T
     placeholder?: string
+    position?: 'bottom' | 'top'
     searchable?: boolean
     customSearch?: (search: string, option: T) => boolean
     valueField?: keyof T
   }>(),
   {
+    adjustPosition: true,
     align: 'left',
     closeOnSelect: undefined,
     labelField: 'label',
     multiple: false,
     placeholder: 'Sélectionner une option',
+    position: 'bottom',
     searchable: false,
     valueField: 'value',
   }
@@ -48,6 +52,13 @@ defineSlots<{
   search?(props: { search: (value: string) => void; value: string }): any
   single?(props: { option: T }): any
 }>()
+
+const menuEl = ref<HTMLLIElement>()
+const buttonEl = ref<HTMLButtonElement>()
+const search = ref('')
+const showMenu = ref(false)
+
+const { height } = useWindowSize({ includeScrollbar: false })
 
 const filteredOptions = computed(() => {
   let options = props.options.concat()
@@ -67,12 +78,33 @@ const internalValue = computed(() => {
   if (!Array.isArray(props.modelValue)) return [props.modelValue]
   return props.modelValue
 })
-const valueKeys = computed(() => internalValue.value.map((option) => option[props.valueField]))
+const adjustedPosition = computed(() => {
+  const bRect = buttonEl.value?.getBoundingClientRect()
+  const mRect = menuEl.value?.getBoundingClientRect()
 
-const menuEl = ref(null)
-const buttonEl = ref(null)
-const search = ref('')
-const showMenu = ref(false)
+  if (!props.adjustPosition || !bRect || !mRect) return props.position
+
+  const bottomHeight = height.value - (bRect.top + bRect.height + 4)
+  const topHeight = bRect.top - 4
+
+  if (
+    props.position === 'top'
+    && topHeight < mRect.height
+    && bottomHeight >= mRect.height
+  ) return 'bottom'
+
+  if (
+    props.position === 'bottom'
+    && bottomHeight < mRect.height
+    && topHeight >= mRect.height
+  ) return 'top'
+
+  return props.position
+})
+const menuPosition = computed(() => ({
+  [adjustedPosition.value === 'top' ? 'bottom' : 'top']: 'calc(100% + 4px)'
+}))
+const valueKeys = computed(() => internalValue.value.map((option) => option[props.valueField]))
 
 function getLabel(option: T) {
   return option[props.labelField]
@@ -208,8 +240,13 @@ onMounted(() => {
       </button>
       <ExpandIcon />
     </button>
-    <ul v-if="showMenu" ref="menuEl" class="vue-multiselect__menu" :style="{ [align]: '0' }">
-      <li v-if="searchable">
+    <ul
+      v-if="showMenu"
+      ref="menuEl"
+      class="vue-multiselect__menu"
+      :style="{ ...menuPosition, [align]: '0' }"
+    >
+      <li v-if="searchable" class="vue-multiselect__search">
         <slot name="search" :value="search" :search="(value: string) => search = value">
           <input v-model="search" type="text" placeholder="Search" name="vue-multiselect__search" />
         </slot>
@@ -330,7 +367,6 @@ onMounted(() => {
     list-style: none;
     padding: 8px 0;
     position: absolute;
-    top: calc(100% + 4px);
     white-space: nowrap;
     z-index: 2023;
 

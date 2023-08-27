@@ -95,6 +95,7 @@ const align = computed(() => alignRight.value ? 'right' : 'left')
         <VueMultiselect
           v-model="value2"
           :options="options"
+          :adjust-position="false"
           :align="align"
           :allow-empty="allowEmpty"
           :clear-on-select="clearOnSelect"
@@ -129,6 +130,7 @@ const align = computed(() => alignRight.value ? 'right' : 'left')
           :close-on-select="closeOnSelect"
           :hide-selected="hideSelected"
           :multiple="multiple"
+          :position="'top'"
           :searchable="searchable"
           :open-on-clear="openOnClear"
           @search="console.log($event)"
@@ -151,6 +153,7 @@ const align = computed(() => alignRight.value ? 'right' : 'left')
     display: flex;
     gap: 2rem;
     padding: 2rem;
+    flex-wrap: wrap;
 
     .checkbox {
       align-items: center;
